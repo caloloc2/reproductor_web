@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor Web</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <style>
         body{
             margin: 0;
@@ -35,58 +36,74 @@
     <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
     <div id="player"></div>
     <button id="full_screen">Full Screen</button>
-
+    
     <script>
-        // 2. This code loads the IFrame Player API code asynchronously.
+
+        
+
+
+        var videoIDs = [
+            '9511Qbh8H2o',
+            'jPV6J4YUQec',
+            '61aLkkvZYHs'
+        ];
+
         var tag = document.createElement('script');
 
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-        // 3. This function creates an <iframe> (and YouTube player)
-        //    after the API code downloads.
         var player;
+        var currentVideoId= 0;
+        var totalVideos = videoIDs.length;
+
         function onYouTubeIframeAPIReady() {
-        player = new YT.Player('player', {
-            height: screen.height,
-            width: screen.width,
-            videoId: '9511Qbh8H2o',
-            playerVars:{
-                loop: 1,
-                controls: 0,
-                showinfo: 0,
-                playlist: '9511Qbh8H2o',
-                enablejsapi: 1,
-                origin: 'http://player.nibemi.com'
-            },
-            events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-            }
-        });
+            player = new YT.Player('player', {
+                height: screen.height,
+                width: screen.width,                
+                playerVars:{
+                    loop: 1,
+                    controls: 1,
+                    showinfo: 0,                    
+                    enablejsapi: 1,
+                    origin: 'http://localhost/reproductor_web'
+                    // origin: 'http://player.nibemi.com'
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
         }
 
         var $ = document.querySelector.bind(document);
 
         // 4. The API will call this function when the video player is ready.
         var iframe = '';
-        function onPlayerReady(event) {
+        function onPlayerReady(event) {            
             iframe = $('#player');
+            event.target.loadVideoById(videoIDs[currentVideoId]);
             event.target.playVideo();
-            setupListener();
-            // $('#full_screen').trigger('click');
-            eventFire(document.getElementById('full_screen'), 'click');
+            setupListener();            
         }
 
-        // 5. The API calls this function when the player's state changes.
-        //    The function indicates that when playing a video (state=1),
-        //    the player should play for six seconds and then stop.
         var done = false;
         function onPlayerStateChange(event) {
             if (event.data == YT.PlayerState.PLAYING && !done) {
-                // setTimeout(stopVideo, 6000);
                 done = true;
+            }
+
+            if (event.data == YT.PlayerState.ENDED) {                
+                if (currentVideoId < (totalVideos-1)) {
+                    currentVideoId++;                                        
+                }else{
+                    currentVideoId = 0;
+                }
+
+
+                player.loadVideoById(videoIDs[currentVideoId]);
+                player.playVideo();
             }
         }
 
@@ -99,17 +116,7 @@
             if (requestFullScreen) {
                 requestFullScreen.bind(iframe)();
             }
-        }
-
-        function eventFire(el, etype){
-            if (el.fireEvent) {
-                el.fireEvent('on' + etype);
-            } else {
-                var evObj = document.createEvent('Events');
-                evObj.initEvent(etype, true, false);
-                el.dispatchEvent(evObj);
-            }
-        }
+        }     
 
         function stopVideo() {
             player.stopVideo();
