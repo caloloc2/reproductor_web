@@ -39,9 +39,9 @@
     
     <script src="js/jquery-3.5.0.min.js"></script>
     <script>
-        var videoIDs = [];
+        var videoIDs = []; // listado de videos a reproducir
 
-        AJAX({}, 'read', function(datos){
+        AJAX({}, 'read', function(datos){ // funcion para leer videos desde archivo
             // console.log(datos);
             if (datos['estado']){
                 if (datos['datos'][0].length>0){
@@ -68,7 +68,7 @@
                 width: screen.width,                
                 playerVars:{
                     loop: 1,
-                    controls: 1,
+                    controls: 0,
                     showinfo: 0,
                     enablejsapi: 1,                    
                     origin: 'http://localhost/reproductor_web'
