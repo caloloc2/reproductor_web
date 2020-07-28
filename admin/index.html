@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Playlist</title>    
+</head>
+<body>
+    <form id='form_video'>
+        <label for="id_video">Video Youtube</label>
+        <input type="text" id="id_video" placeholder="Youtube Video Code">
+        <input type="submit" value="Add Video">
+    </form>
+    <br>
+    <br>
+    <br>
+    <table border="1" cellspacing="0" width="360px">
+        <thead>
+            <tr>
+                <td>Video Code</td>
+                <td width="80px" align="center">Action</td>
+            </tr>
+        </thead>
+        <tbody id="listado"></tbody>
+    </table>
+
+    <script src="../js/jquery-3.5.0.min.js"></script>
+    <script>
+        var videos = [];
+
+        $(document).ready(function(){
+            Llenar();
+        })
+
+        function Llenar(){
+            AJAX({}, 'read', function(datos){
+                // console.log(datos);
+                if (datos['estado']){                    
+                    if (datos['datos'][0].length>0){
+                        datos['datos'][0].forEach(element => {                            
+                            videos.push(element);
+                        });                    
+                    }      
+                    Mostrar_Lista();              
+                }
+            })
+        }
+
+        function Mostrar_Lista(){
+            var items = '';
+            var id = 0;
+            if (videos.length>0){
+                videos.forEach(element => {                            
+                    items += '<tr>';
+                    items += '<td>'+element+'</td>';
+                    items += '<td align="center"><a href="#" onclick="Borrar('+id+');">Delete</a></td>';
+                    items += '</tr>';
+                    id+=1;
+                });
+            }
+            $("#listado").html(items);
+        }
+
+        function Borrar(id){
+            videos.splice(id, 1);
+            Actualiza_Lista();
+        }
+
+        $('#form_video').submit(function(e){
+            e.preventDefault();       
+            if (document.getElementById("id_video").value!=""){
+                videos.push(document.getElementById("id_video").value);
+                Actualiza_Lista();
+            }
+        })
+
+        function Actualiza_Lista(){
+            AJAX(videos, 'write', function(datos){
+                // console.log(datos);
+                if (datos['estado']){
+                    videos = [];
+                    Llenar();
+                    document.getElementById("id_video").value = "";
+                }
+            })
+        }
+
+        function AJAX(campos, modulo, callback){
+            $.ajax({
+                url: "php/settings.php",
+                dataType: 'json',
+                data: {
+                    campos,
+                    modulo
+                },
+                type: "POST",
+                success: function(datos) {            
+                    if (typeof callback === "function") {
+                        callback(datos);
+                    }
+                },
+                error:function(e){            
+                    if (typeof callback === "function") {
+                        callback(e.responseText);
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>

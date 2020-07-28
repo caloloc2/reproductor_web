@@ -37,12 +37,20 @@
     <div id="player"></div>
     <button id="full_screen">Full Screen</button>
     
+    <script src="js/jquery-3.5.0.min.js"></script>
     <script>
-        var videoIDs = [
-            '9511Qbh8H2o',
-            'jPV6J4YUQec',
-            '61aLkkvZYHs'
-        ];
+        var videoIDs = [];
+
+        AJAX({}, 'read', function(datos){
+            // console.log(datos);
+            if (datos['estado']){
+                if (datos['datos'][0].length>0){
+                    datos['datos'][0].forEach(element => {                            
+                        videoIDs.push(element);                        
+                    });                    
+                }
+            }
+        })
 
         var tag = document.createElement('script');
 
@@ -61,10 +69,10 @@
                 playerVars:{
                     loop: 1,
                     controls: 1,
-                    showinfo: 0,                    
-                    enablejsapi: 1,
-                    // origin: 'http://localhost/reproductor_web'
-                    origin: 'http://player.nibemi.com'
+                    showinfo: 0,
+                    enablejsapi: 1,                    
+                    origin: 'http://localhost/reproductor_web'
+                    // origin: 'http://player.nibemi.com'
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -82,7 +90,7 @@
             event.target.loadVideoById(videoIDs[currentVideoId]);
             event.target.playVideo();
             setupListener();            
-        }
+        }        
 
         var done = false;
         function onPlayerStateChange(event) {
@@ -96,7 +104,6 @@
                 }else{
                     currentVideoId = 0;
                 }
-
 
                 player.loadVideoById(videoIDs[currentVideoId]);
                 player.playVideo();
@@ -117,6 +124,30 @@
         function stopVideo() {
             player.stopVideo();
         }
+    
+        function AJAX(campos, modulo, callback){
+            $.ajax({
+                url: "admin/php/settings.php",
+                dataType: 'json',
+                data: {
+                    campos,
+                    modulo
+                },
+                type: "POST",
+                async: false,
+                success: function(datos) {            
+                    if (typeof callback === "function") {
+                        callback(datos);
+                    }
+                },
+                error:function(e){            
+                    if (typeof callback === "function") {
+                        callback(e.responseText);
+                    }
+                }
+            });
+        }
+    
     </script>
 </body>
 </html>
